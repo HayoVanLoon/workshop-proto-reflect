@@ -1,51 +1,162 @@
-package main
+package main_test
 
 import (
-	"google.golang.org/protobuf/reflect/protoreflect"
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
-	"workshop/withmap"
-	"workshop/withproto"
-	"workshop/withreflect"
-	"workshop/withtree"
-	"workshop/withtree/tree"
+
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+
+	"workshop/ex1map"
+	"workshop/ex2tree"
+	"workshop/ex2tree/tree"
+	"workshop/ex3reflect"
+	"workshop/ex4proto"
 )
 
-func Benchmark(b *testing.B) {
-	path := [][]string{
-		{"age"},
-		{"skin", "blemishes"},
-	}
-
-	b.Run("with map", func(b *testing.B) {
-		m := withmap.Create()
+func BenchmarkGetValue(b *testing.B) {
+	b.Run("map", func(b *testing.B) {
+		m := ex1map.Create()
 		for i := 0; i < b.N; i += 1 {
-			withmap.SetValue(m, path[0], i)
-			withmap.SetValue(m, path[1], i)
+			ex1map.GetValue(m, path[0])
+			ex1map.GetValue(m, path[1])
 		}
 	})
 
-	b.Run("with struct", func(b *testing.B) {
-		m := withtree.Create()
+	b.Run("tree", func(b *testing.B) {
+		m := ex2tree.Create()
 		for i := 0; i < b.N; i += 1 {
-			withtree.SetValue(m, path[0], tree.ValueOfInt(i))
-			withtree.SetValue(m, path[1], tree.ValueOfInt(i))
+			ex2tree.GetValue(m, path[0])
+			ex2tree.GetValue(m, path[1])
 		}
 	})
 
-	b.Run("with reflect", func(b *testing.B) {
-		m := withreflect.Create()
+	b.Run("reflect", func(b *testing.B) {
+		m := ex3reflect.Create()
 		for i := 0; i < b.N; i += 1 {
-			withreflect.SetValue(&m, path[0], reflect.ValueOf(int32(i)))
-			withreflect.SetValue(&m, path[1], reflect.ValueOf(int32(i)))
+			ex3reflect.GetValue(m, pathPascal[0])
+			ex3reflect.GetValue(m, pathPascal[1])
 		}
 	})
 
-	b.Run("with proto reflect", func(b *testing.B) {
-		m := withproto.Create()
+	b.Run("reflect pointer", func(b *testing.B) {
+		m := ex3reflect.Create()
 		for i := 0; i < b.N; i += 1 {
-			withproto.SetValue(m, path[0], protoreflect.ValueOf(int32(i)))
-			withproto.SetValue(m, path[1], protoreflect.ValueOf(int32(i)))
+			ex3reflect.GetValue(&m, pathPascal[0])
+			ex3reflect.GetValue(&m, pathPascal[1])
 		}
 	})
+
+	b.Run("proto", func(b *testing.B) {
+		m := ex4proto.Create()
+		for i := 0; i < b.N; i += 1 {
+			ex4proto.GetValue(m, path[0])
+			ex4proto.GetValue(m, path[1])
+		}
+	})
+}
+
+func BenchmarkSetValue(b *testing.B) {
+	b.Run("map", func(b *testing.B) {
+		m := ex1map.Create()
+		for i := 0; i < b.N; i += 1 {
+			ex1map.SetValue(m, path[0], i)
+			ex1map.SetValue(m, path[1], i)
+		}
+	})
+
+	b.Run("tree", func(b *testing.B) {
+		m := ex2tree.Create()
+		for i := 0; i < b.N; i += 1 {
+			v := tree.ValueOfInt(i)
+			ex2tree.SetValue(m, path[0], v)
+			ex2tree.SetValue(m, path[1], v)
+		}
+	})
+
+	b.Run("reflect", func(b *testing.B) {
+		m := ex3reflect.Create()
+		for i := 0; i < b.N; i += 1 {
+			v := reflect.ValueOf(int32(i))
+			ex3reflect.SetValue(&m, pathPascal[0], v)
+			ex3reflect.SetValue(&m, pathPascal[1], v)
+		}
+	})
+
+	b.Run("proto", func(b *testing.B) {
+		m := ex4proto.Create()
+		for i := 0; i < b.N; i += 1 {
+			v := protoreflect.ValueOf(int32(i))
+			ex4proto.SetValue(m, path[0], v)
+			ex4proto.SetValue(m, path[1], v)
+		}
+	})
+}
+
+func BenchmarkSerialisation(b *testing.B) {
+	b.Run("JSON map", func(b *testing.B) {
+		m := ex1map.Create()
+		for i := 0; i < b.N; i += 1 {
+			_, _ = json.Marshal(m)
+		}
+	})
+
+	b.Run("JSON tree", func(b *testing.B) {
+		m := ex2tree.Create()
+		for i := 0; i < b.N; i += 1 {
+			_, _ = json.Marshal(m)
+		}
+	})
+
+	b.Run("JSON struct", func(b *testing.B) {
+		m := ex3reflect.Create()
+		for i := 0; i < b.N; i += 1 {
+			_, _ = json.Marshal(m)
+		}
+	})
+
+	b.Run("Protobuf proto", func(b *testing.B) {
+		m := ex4proto.Create()
+		for i := 0; i < b.N; i += 1 {
+			_, _ = proto.Marshal(m)
+		}
+	})
+
+	bs, _ := json.Marshal(ex1map.Create())
+	fmt.Printf("map: %dB\n", len(bs))
+	bs, _ = json.Marshal(ex2tree.Create())
+	fmt.Printf("tree: %dB\n", len(bs))
+	bs, _ = json.Marshal(ex3reflect.Create())
+	fmt.Printf("struct: %dB\n", len(bs))
+	bs, _ = proto.Marshal(ex4proto.Create())
+	fmt.Printf("proto %dB\n", len(bs))
+}
+
+func BenchmarkApply(b *testing.B) {
+	b.Run("reflect", func(b *testing.B) {
+		m := ex3reflect.Create()
+		for i := 0; i < b.N; i += 1 {
+			ex3reflect.Apply(&m)
+		}
+	})
+
+	b.Run("proto", func(b *testing.B) {
+		m := ex4proto.Create()
+		for i := 0; i < b.N; i += 1 {
+			ex4proto.Apply(m)
+		}
+	})
+}
+
+var path = [][]string{
+	{"age"},
+	{"skin", "blemishes"},
+	{"skin", "smell"},
+}
+var pathPascal = [][]string{
+	{"Age"},
+	{"Skin", "Blemishes"},
+	{"Skin", "Smell"},
 }

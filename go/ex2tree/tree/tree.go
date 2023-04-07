@@ -6,23 +6,16 @@ import (
 )
 
 type KeyValue struct {
-	key   string
-	value value
-}
-
-func (kv KeyValue) Key() string {
-	return kv.key
-}
-
-func (kv KeyValue) Value() Value {
-	return kv.value
+	Key   string
+	Value value
 }
 
 func (kv KeyValue) String() string {
-	return kv.key + ":" + kv.value.String()
+	return kv.Key + ":" + kv.Value.String()
 }
 
 type Value interface {
+	Type() ValueType
 	Tree() Tree
 	StringVal() string
 	IntVal() int
@@ -39,77 +32,91 @@ type Tree interface {
 }
 
 type message struct {
-	fields []KeyValue
+	Fields []KeyValue
 }
 
 func (*message) private() {}
 
 func (m *message) Children() []KeyValue {
-	return m.fields
+	return m.Fields
 }
 
 func (m *message) Set(key string, val Value) {
 	v := val.(value)
-	for i := 0; i < len(m.fields); i += 1 {
-		if m.fields[i].key == key {
-			m.fields[i].value = v
+	for i := 0; i < len(m.Fields); i += 1 {
+		if m.Fields[i].Key == key {
+			m.Fields[i].Value = v
 			return
 		}
 	}
-	m.fields = append(m.fields, KeyValue{key, v})
+	m.Fields = append(m.Fields, KeyValue{key, v})
 }
 
 func (m *message) String() string {
 	var ss []string
-	for _, kv := range m.fields {
+	for _, kv := range m.Fields {
 		ss = append(ss, kv.String())
 	}
 	return "{" + strings.Join(ss, ",") + "}"
 }
 
+type ValueType int
+
+const (
+	valueTypeUnknown ValueType = iota
+	ValueTypeTree
+	ValueTypeString
+	ValueTypeInt
+)
+
 type value struct {
-	message    *message
-	string_val string
-	int_val    int
+	Typ_       ValueType
+	Message    *message
+	StringVal_ string
+	IntVal_    int
 }
 
 func (value) private() {}
 
+func (v value) Type() ValueType {
+	return v.Typ_
+}
+
 func (v value) Tree() Tree {
-	return v.message
+	return v.Message
 }
 
 func (v value) StringVal() string {
-	return v.string_val
+	return v.StringVal_
 }
 
 func (v value) IntVal() int {
-	return v.int_val
+	return v.IntVal_
 }
 
 func (v value) String() string {
-	switch {
-	case v.message != nil:
-		return v.message.String()
-	case v.int_val != 0:
-		return strconv.Itoa(v.int_val)
-	case v.string_val != "":
-		return v.string_val
+	switch v.Typ_ {
+	case ValueTypeTree:
+		return v.Message.String()
+	case ValueTypeInt:
+		return strconv.Itoa(v.IntVal_)
+	case ValueTypeString:
+		return v.StringVal_
 	default:
-		return "<zero>"
+		return "<nil>"
 	}
 }
 
 func ValueOfMessage(m Tree) Value {
-	return value{message: m.(*message)}
+	return value{Typ_: ValueTypeTree, Message: m.(*message)}
 }
 
 func ValueOfString(s string) Value {
-	return value{string_val: s}
+	return value{Typ_: ValueTypeString, StringVal_: s}
 }
 
 func ValueOfInt(i int) Value {
-	return value{int_val: i}
+	return value{Typ_: ValueTypeInt, IntVal_: i}
 }
 
 func NewTree() Tree {

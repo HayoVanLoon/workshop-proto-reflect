@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
-	"workshop/withmap"
-	"workshop/withproto"
-	"workshop/withreflect"
-	"workshop/withtree"
+
+	"workshop/ex1map"
+	"workshop/ex2tree"
+	"workshop/ex3reflect"
+	"workshop/ex4proto"
 )
 
 func main() {
@@ -16,20 +17,23 @@ func main() {
 	switch os.Args[1] {
 	case "map":
 		fmt.Println("==== with map ====")
-		withmap.Run()
+		ex1map.Run()
 	case "struct":
 		fmt.Println("==== with tree ====")
-		withtree.Run()
+		ex2tree.Run()
 	case "reflect":
 		fmt.Println("==== with reflect ====")
-		withreflect.Run()
+		ex3reflect.Run()
+		apple := ex3reflect.Create()
+		ex3reflect.Apply(&apple)
+		fmt.Println(apple)
 	case "proto":
 		fmt.Println("==== with proto reflect ====")
-		withproto.Run()
+		ex4proto.Run()
 	case "annotations":
 		fmt.Println("==== apply annotations ====")
-		apple := withproto.Create()
-		withproto.Apply(apple)
+		apple := ex4proto.Create()
+		ex4proto.Apply(apple)
 		fmt.Println(apple)
 	}
 	fmt.Println()

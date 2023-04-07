@@ -50,4 +50,4 @@ run-py:
 	$(V) && cd py && ./main.py
 
 bench:
-	cd go && go test -bench .
+	cd go && go test -bench . -benchmem

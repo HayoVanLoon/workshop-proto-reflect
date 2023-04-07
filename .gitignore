@@ -8,3 +8,6 @@
 # Generated code
 **/lib
 py/workshop
+
+# Standard
+**/tmp

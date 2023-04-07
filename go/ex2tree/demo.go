@@ -1,16 +1,24 @@
-package withtree
+// Package ex2tree  works with data stored in a tree.
+//
+// For simplicity, these examples do not handle list or map values.
+package ex2tree
 
 import (
 	"fmt"
-	"workshop/withtree/tree"
+
+	"workshop/ex2tree/tree"
 )
 
 func GetValue(m tree.Tree, path []string) tree.Value {
 	if len(path) == 0 {
 		return nil
 	}
+
 	for _, kv := range m.Children() {
-		k, v := kv.Key(), kv.Value()
+		k := kv.Key
+		v := kv.Value
+
+		// work with current field?
 		switch {
 		case k != path[0]:
 			continue
@@ -19,6 +27,8 @@ func GetValue(m tree.Tree, path []string) tree.Value {
 		case v.Tree() == nil:
 			return nil
 		}
+
+		// go deeper
 		return GetValue(v.Tree(), path[1:])
 	}
 	return nil
@@ -28,8 +38,12 @@ func SetValue(m tree.Tree, path []string, val tree.Value) {
 	if len(path) == 0 {
 		return
 	}
+
 	for _, kv := range m.Children() {
-		k, v := kv.Key(), kv.Value()
+		k := kv.Key
+		v := kv.Value
+
+		// work on current field?
 		switch {
 		case k != path[0]:
 			continue
@@ -39,8 +53,27 @@ func SetValue(m tree.Tree, path []string, val tree.Value) {
 		case v.Tree() == nil:
 			return
 		}
+
+		// go deeper
 		SetValue(v.Tree(), path[1:], val)
 	}
+}
+
+func DepthFirstTraversal(m tree.Tree) []tree.Value {
+	var out []tree.Value
+
+	for _, kv := range m.Children() {
+		v := kv.Value
+
+		if v.Type() != tree.ValueTypeTree {
+			out = append(out, v)
+			continue
+		}
+
+		// go deeper
+		out = append(out, DepthFirstTraversal(v.Tree())...)
+	}
+	return out
 }
 
 func Create() tree.Tree {
@@ -62,6 +95,7 @@ func Create() tree.Tree {
 func Run() {
 	apple := Create()
 	fmt.Println("apple\t\t:", apple)
+	fmt.Println("traversal\t:", DepthFirstTraversal(apple))
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"skin", "blemishes"}))
 	SetValue(apple, []string{"skin", "blemishes"}, tree.ValueOfInt(4))
 	fmt.Println("after update\t:", apple)
