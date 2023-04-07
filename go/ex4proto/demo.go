@@ -143,8 +143,5 @@ func Hide(fd protoreflect.FieldDescriptor) bool {
 		return false
 	}
 	a, ok := x.(*pb.MyAnnotation)
-	if !ok {
-		return false
-	}
-	return a.Hide
+	return ok && a.Hide
 }
