@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package workshop.v1;
+
+option go_package = "workshop/v1;workshop";
+
+import "workshop/v1/annotation.proto";
+
+message Apple {
+  // the brand
+  string brand = 1;
+  // the age (in an undefined unit)
+  int32 age = 2;
+  // skin characteristics
+  Skin skin = 3;
+
+  // Skin describes the apple's skin.
+  message Skin {
+    // the skin's colour
+    string colour = 1;
+    // number of bruised spots
+    int32 blemishes = 2 [(v1.my_annotation).hide = true];
+  }
+}

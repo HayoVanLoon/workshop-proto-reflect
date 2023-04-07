@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package workshop.v1;
+
+option go_package = "workshop/v1;workshop";
+
+import "google/protobuf/descriptor.proto";
+
+message MyAnnotation {
+  bool hide = 1;
+}
+
+extend google.protobuf.FieldOptions {
+  MyAnnotation my_annotation = 1234567;
+}
