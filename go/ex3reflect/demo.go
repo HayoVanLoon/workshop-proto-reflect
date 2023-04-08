@@ -134,11 +134,11 @@ func Traverse(m any) []any {
 	return out
 }
 
-func SchemaFor(m any) map[string]any {
-	return schemaFor(reflect.TypeOf(m))
+func SchemaFor(m any, maxDepth int) map[string]any {
+	return schemaFor(reflect.TypeOf(m), maxDepth)
 }
 
-func schemaFor(t reflect.Type) map[string]any {
+func schemaFor(t reflect.Type, maxDepth int) map[string]any {
 	out := make(map[string]any)
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
@@ -150,7 +150,10 @@ func schemaFor(t reflect.Type) map[string]any {
 		if fd.Type.Kind() != reflect.Struct {
 			v = fd.Type.Kind().String()
 		} else {
-			v = schemaFor(fd.Type)
+			if maxDepth <= 0 {
+				continue
+			}
+			v = schemaFor(fd.Type, maxDepth-1)
 		}
 		out[strings.ToLower(fd.Name)] = v
 	}
@@ -195,7 +198,7 @@ func Run() {
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"Skin", "Blemishes"}))
 	SetValue(&apple, []string{"Skin", "Blemishes"}, int32(4))
 	fmt.Printf("after update\t: %+v\n", apple)
-	schema := SchemaFor(apple)
+	schema := SchemaFor(apple, 10)
 	fmt.Println("schema\t\t:", schema)
 	Apply(&apple)
 	fmt.Printf("after apply\t: %+v\n", apple)

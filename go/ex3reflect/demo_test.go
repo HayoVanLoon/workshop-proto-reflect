@@ -146,7 +146,7 @@ func TestSchemaFor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := ex3reflect.SchemaFor(tt.args.m)
+			actual := ex3reflect.SchemaFor(tt.args.m, 10)
 			require.Equal(t, tt.want, actual)
 		})
 	}
