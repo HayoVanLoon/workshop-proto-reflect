@@ -9,6 +9,17 @@ import (
 	"strconv"
 )
 
+type Apple struct {
+	Brand string
+	Age   int32
+	Skin  AppleSkin
+}
+
+type AppleSkin struct {
+	Colour    string
+	Blemishes int32 `hide:"true"`
+}
+
 func Create() Apple {
 	apple := Apple{}
 
@@ -23,17 +34,6 @@ func Create() Apple {
 	apple.Skin = skin
 
 	return apple
-}
-
-type Apple struct {
-	Brand string
-	Age   int32
-	Skin  AppleSkin
-}
-
-type AppleSkin struct {
-	Colour    string
-	Blemishes int32 `hide:"true"`
 }
 
 // GetValue expects path in PascalCase.
@@ -68,10 +68,11 @@ func GetValue(m any, path []string) any {
 }
 
 // SetValue expects path in PascalCase.
-func SetValue(m any, path []string, val reflect.Value) {
+func SetValue(m any, path []string, value any) {
 	if len(path) == 0 {
 		return
 	}
+	val := reflect.ValueOf(value)
 
 	// "get into reflect mode"
 	t := reflect.TypeOf(m)
@@ -82,7 +83,8 @@ func SetValue(m any, path []string, val reflect.Value) {
 	}
 
 	// get the field
-	if _, ok := t.FieldByName(path[0]); !ok {
+	fd, ok := t.FieldByName(path[0])
+	if !ok {
 		return
 	}
 	v := mv.FieldByName(path[0])
@@ -91,12 +93,18 @@ func SetValue(m any, path []string, val reflect.Value) {
 		return
 	}
 
+	// try to go deeper
 	if v.Type().Kind() != reflect.Struct {
 		return
 	}
-	// go deeper
-	vm := v.Addr().Interface()
-	SetValue(vm, path[1:], val)
+	var vm any
+	if v.IsValid() {
+		vm = v.Addr().Interface()
+	} else {
+		// might work for non-initialised pointer values; untested
+		vm = reflect.New(fd.Type)
+	}
+	SetValue(vm, path[1:], value)
 }
 
 func Traverse(m any) []any {
@@ -158,9 +166,11 @@ func Hide(fd reflect.StructField) bool {
 
 func Run() {
 	apple := Create()
-	fmt.Println("apple\t\t:", apple)
+	fmt.Printf("apple\t\t: %+v\n", apple)
 	fmt.Println("traversal\t:", Traverse(apple))
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"Skin", "Blemishes"}))
-	SetValue(&apple, []string{"Skin", "Blemishes"}, reflect.ValueOf(int32(4)))
-	fmt.Println("after update\t:", apple)
+	SetValue(&apple, []string{"Skin", "Blemishes"}, int32(4))
+	fmt.Printf("after update\t: %+v\n", apple)
+	Apply(&apple)
+	fmt.Printf("after apply\t: %+v\n", apple)
 }

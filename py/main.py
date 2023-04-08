@@ -20,7 +20,6 @@ def apply(m):
 
 
 def run():
-    print()
     apple = pb.Apple()
     apple.brand = "granny-smith"
     apple.age = 42

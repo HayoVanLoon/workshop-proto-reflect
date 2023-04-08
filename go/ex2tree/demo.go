@@ -34,17 +34,18 @@ func GetValue(m tree.Tree, path []string) tree.Value {
 		k := kv.Key
 		v := kv.Value
 
-		// work with current field?
-		switch {
-		case k != path[0]:
+		if k != path[0] {
 			continue
-		case len(path) == 1:
+		}
+		// work with current field?
+		if len(path) == 1 {
 			return v
-		case v.Tree() == nil:
-			return nil
 		}
 
-		// go deeper
+		// try to go deeper
+		if v.Tree() == nil {
+			return nil
+		}
 		return GetValue(v.Tree(), path[1:])
 	}
 	return nil
@@ -59,18 +60,22 @@ func SetValue(m tree.Tree, path []string, val tree.Value) {
 		k := kv.Key
 		v := kv.Value
 
-		// work on current field?
-		switch {
-		case k != path[0]:
+		if k != path[0] {
 			continue
-		case len(path) == 1:
+		}
+		// work on current field?
+		if len(path) == 1 {
+			if v.Type() != val.Type() {
+				return
+			}
 			m.Set(k, val)
-			return
-		case v.Tree() == nil:
 			return
 		}
 
-		// go deeper
+		// try to go deeper
+		if v.Tree() == nil {
+			return
+		}
 		SetValue(v.Tree(), path[1:], val)
 	}
 }

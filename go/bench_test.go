@@ -3,12 +3,9 @@ package main_test
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
-
 	"workshop/ex1map"
 	"workshop/ex2tree"
 	"workshop/ex2tree/tree"
@@ -79,7 +76,7 @@ func BenchmarkSetValue(b *testing.B) {
 	b.Run("reflect", func(b *testing.B) {
 		m := ex3reflect.Create()
 		for i := 0; i < b.N; i += 1 {
-			v := reflect.ValueOf(int32(i))
+			v := int32(i)
 			ex3reflect.SetValue(&m, pathPascal[0], v)
 			ex3reflect.SetValue(&m, pathPascal[1], v)
 		}
@@ -88,7 +85,7 @@ func BenchmarkSetValue(b *testing.B) {
 	b.Run("proto", func(b *testing.B) {
 		m := ex4proto.Create()
 		for i := 0; i < b.N; i += 1 {
-			v := protoreflect.ValueOf(int32(i))
+			v := int32(i)
 			ex4proto.SetValue(m, path[0], v)
 			ex4proto.SetValue(m, path[1], v)
 		}

@@ -5,16 +5,34 @@ package ex4proto
 
 import (
 	"fmt"
+
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 
 	pb "workshop/lib/workshop/v1"
 )
 
+func Create() *pb.Apple {
+	apple := &pb.Apple{}
+
+	brand := "granny-smith"
+	apple.Brand = brand
+	age := 42
+	apple.Age = int32(age)
+
+	skin := &pb.Apple_Skin{}
+	skin.Colour = "green"
+	skin.Blemishes = 3
+	apple.Skin = skin
+
+	return apple
+}
+
 // GetValue expects path in snake_case.
-func GetValue(m proto.Message, path []string) protoreflect.Value {
+func GetValue(m proto.Message, path []string) any {
 	if len(path) == 0 {
-		return protoreflect.Value{}
+		return nil
 	}
 
 	// "get into reflect mode"
@@ -24,26 +42,30 @@ func GetValue(m proto.Message, path []string) protoreflect.Value {
 	// get the field
 	fd := d.Fields().ByName(protoreflect.Name(path[0]))
 	if fd == nil {
-		return protoreflect.Value{}
+		return nil
 	}
 	v := mp.Get(fd)
 	if len(path) == 1 {
-		return v
+		if v.IsValid() {
+			return v.Interface()
+		}
+		return nil
 	}
 
 	// try to go deeper
 	if fd.Kind() != protoreflect.MessageKind {
-		return protoreflect.Value{}
+		return nil
 	}
 	vm := v.Message().Interface()
 	return GetValue(vm, path[1:])
 }
 
 // SetValue expects path in snake_case.
-func SetValue(m proto.Message, path []string, val protoreflect.Value) {
+func SetValue(m proto.Message, path []string, value any) {
 	if len(path) == 0 {
 		return
 	}
+	val := protoreflect.ValueOf(value)
 
 	// "get into reflect mode"
 	mp := m.ProtoReflect()
@@ -64,15 +86,17 @@ func SetValue(m proto.Message, path []string, val protoreflect.Value) {
 		return
 	}
 	v := mp.Get(fd)
-	if !v.IsValid() {
-		return
+	if !v.Message().IsValid() {
+		t, _ := protoregistry.GlobalTypes.FindMessageByName(fd.Message().FullName())
+		v = protoreflect.ValueOfMessage(t.New())
+		mp.Set(fd, v)
 	}
 	vm := v.Message().Interface()
-	SetValue(vm, path[1:], val)
+	SetValue(vm, path[1:], value)
 }
 
-func Traverse(m proto.Message) []protoreflect.Value {
-	var out []protoreflect.Value
+func Traverse(m proto.Message) []any {
+	var out []any
 
 	// "get into reflect mode"
 	mp := m.ProtoReflect()
@@ -83,7 +107,7 @@ func Traverse(m proto.Message) []protoreflect.Value {
 		v := mp.Get(fd)
 
 		if fd.Kind() != protoreflect.MessageKind {
-			out = append(out, v)
+			out = append(out, v.Interface())
 			continue
 		}
 
@@ -94,27 +118,12 @@ func Traverse(m proto.Message) []protoreflect.Value {
 	return out
 }
 
-func Create() *pb.Apple {
-	apple := &pb.Apple{}
-
-	brand := "granny-smith"
-	apple.Brand = brand
-	age := 42
-	apple.Age = int32(age)
-
-	skin := &pb.Apple_Skin{}
-	skin.Colour = "green"
-	skin.Blemishes = 3
-	apple.Skin = skin
-
-	return apple
-}
-
 func Apply(m proto.Message) {
 	mp := m.ProtoReflect()
 	mp.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 		if Hide(fd) {
 			mp.Clear(fd)
+			return true
 		}
 		if fd.Kind() == protoreflect.MessageKind {
 			// go deeper
@@ -122,6 +131,7 @@ func Apply(m proto.Message) {
 		}
 		return true
 	})
+	fmt.Println(m)
 }
 
 func Hide(fd protoreflect.FieldDescriptor) bool {
@@ -142,6 +152,8 @@ func Run() {
 	fmt.Println("apple\t\t:", apple)
 	fmt.Println("traversal\t:", Traverse(apple))
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"skin", "blemishes"}))
-	SetValue(apple, []string{"skin", "blemishes"}, protoreflect.ValueOfInt32(4))
+	SetValue(apple, []string{"skin", "blemishes"}, int32(4))
 	fmt.Println("after update\t:", apple)
+	Apply(apple)
+	fmt.Println("after apply\t:", apple)
 }

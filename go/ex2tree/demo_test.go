@@ -101,6 +101,11 @@ func TestSetValue(t *testing.T) {
 			}(),
 		},
 		{
+			"! wrong type",
+			args{ex2tree.Create(), []string{"brand"}, tree.ValueOfInt(5)},
+			ex2tree.Create(),
+		},
+		{
 			"empty",
 			args{ex2tree.Create(), nil, tree.ValueOfInt(1)},
 			ex2tree.Create(),
@@ -115,7 +120,7 @@ func TestSetValue(t *testing.T) {
 	}
 }
 
-func TestDepthFirstTraversal(t *testing.T) {
+func TestTraverse(t *testing.T) {
 	type args struct {
 		m tree.Tree
 	}

@@ -99,7 +99,7 @@ func TestSetValue(t *testing.T) {
 	}
 }
 
-func TestDepthFirstTraversal(t *testing.T) {
+func TestTraverse(t *testing.T) {
 	type args struct {
 		m map[string]any
 	}

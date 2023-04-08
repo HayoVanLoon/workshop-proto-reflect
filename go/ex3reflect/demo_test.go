@@ -1,11 +1,9 @@
 package ex3reflect_test
 
 import (
-	"reflect"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"workshop/ex3reflect"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestGetValue(t *testing.T) {
@@ -51,7 +49,7 @@ func TestSetValue(t *testing.T) {
 	type args struct {
 		m     ex3reflect.Apple
 		path  []string
-		value reflect.Value
+		value any
 	}
 	tests := []struct {
 		name string
@@ -60,7 +58,7 @@ func TestSetValue(t *testing.T) {
 	}{
 		{
 			"happy 1st level",
-			args{ex3reflect.Create(), []string{"Brand"}, reflect.ValueOf("elstar")},
+			args{ex3reflect.Create(), []string{"Brand"}, "elstar"},
 			ex3reflect.Apple{
 				Brand: "elstar",
 				Age:   42,
@@ -69,7 +67,7 @@ func TestSetValue(t *testing.T) {
 		},
 		{
 			"happy 2nd level",
-			args{ex3reflect.Create(), []string{"Skin", "Blemishes"}, reflect.ValueOf(int32(4))},
+			args{ex3reflect.Create(), []string{"Skin", "Blemishes"}, int32(4)},
 			ex3reflect.Apple{
 				Brand: "granny-smith",
 				Age:   42,
@@ -78,7 +76,7 @@ func TestSetValue(t *testing.T) {
 		},
 		{
 			"! add",
-			args{ex3reflect.Create(), []string{"Skin", "Punctures"}, reflect.ValueOf(5)},
+			args{ex3reflect.Create(), []string{"Skin", "Punctures"}, 5},
 			ex3reflect.Apple{
 				Brand: "granny-smith",
 				Age:   42,
@@ -87,7 +85,7 @@ func TestSetValue(t *testing.T) {
 		},
 		{
 			"empty",
-			args{ex3reflect.Apple{}, []string{"Skin", "Colour"}, reflect.ValueOf("green")},
+			args{ex3reflect.Apple{}, []string{"Skin", "Colour"}, "green"},
 			ex3reflect.Apple{Skin: ex3reflect.AppleSkin{Colour: "green"}},
 		},
 	}
@@ -100,7 +98,7 @@ func TestSetValue(t *testing.T) {
 	}
 }
 
-func TestDepthFirstTraversal(t *testing.T) {
+func TestTraverse(t *testing.T) {
 	type args struct {
 		m ex3reflect.Apple
 	}
@@ -123,6 +121,35 @@ func TestDepthFirstTraversal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := ex3reflect.Traverse(tt.args.m)
+			require.Equal(t, tt.want, actual)
+		})
+	}
+}
+
+func TestApply(t *testing.T) {
+	type args struct {
+		m ex3reflect.Apple
+	}
+	tests := []struct {
+		name string
+		args args
+		want ex3reflect.Apple
+	}{
+		{
+			"happy",
+			args{ex3reflect.Create()},
+			ex3reflect.Apple{
+				Brand: "granny-smith",
+				Age:   42,
+				Skin:  ex3reflect.AppleSkin{Colour: "green"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// should strictly be a deep copy, but not worth the effort
+			actual := tt.args.m
+			ex3reflect.Apply(&actual)
 			require.Equal(t, tt.want, actual)
 		})
 	}
