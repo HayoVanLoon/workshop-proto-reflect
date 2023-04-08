@@ -10,15 +10,20 @@ import (
 	"workshop/ex4proto"
 )
 
+func printHelp() {
+	fmt.Printf("Usage:\n\t%s map|tree|reflect|proto", os.Args[0])
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		return
+		printHelp()
+		os.Exit(3)
 	}
 	switch os.Args[1] {
 	case "map":
 		fmt.Println("==== with map ====")
 		ex1map.Run()
-	case "struct":
+	case "tree":
 		fmt.Println("==== with tree ====")
 		ex2tree.Run()
 	case "reflect":
@@ -27,6 +32,9 @@ func main() {
 	case "proto":
 		fmt.Println("==== with proto reflect ====")
 		ex4proto.Run()
+	default:
+		printHelp()
+		os.Exit(3)
 	}
 	fmt.Println()
 }

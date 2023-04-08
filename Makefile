@@ -32,13 +32,13 @@ protoc-py:
 		-I$(PROTO_DIR) \
 		$(FILES)
 
-run-all: run-map run-struct run-reflect run-proto run-py
+run: run-map run-tree run-reflect run-proto run-py
 
 run-map:
 	cd go && go run main.go map
 
-run-struct:
-	cd go && go run main.go struct
+run-tree:
+	cd go && go run main.go tree
 
 run-reflect:
 	cd go && go run main.go reflect
