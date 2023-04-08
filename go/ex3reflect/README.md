@@ -1,10 +1,12 @@
-# Generic Data Manipulation Using a Normal Struct
+# Example 3: Using a Reflection
 
-Pros
+|           | + | 0 | - |
+|-----------|---|---|---|
+| easy      |   |   | x |
+| get       | x |   |   |
+| set       | x |   |   |
+| traversal | x |   |   |
+| type safe | x |   |   |
+| schema*   | x |   |   |
 
-- strict schema
-- works with normal code
-
-Cons
-
-- complicated reflection (examples are happy paths)
+*) a (possibly) non-recursive schema fit for use in databases

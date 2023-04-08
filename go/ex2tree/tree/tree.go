@@ -24,6 +24,7 @@ type Value interface {
 }
 
 type Tree interface {
+	// Children returns a list of child nodes, ordered by insertion time.
 	Children() []KeyValue
 
 	Set(key string, value Value)

@@ -1,11 +1,13 @@
-# Generic Data Manipulation Using a Protobuf
+# Example 4: Using Protobuf
 
-Pros
 
-- strict schema
-- custom field annotations
-- efficient serialisation
+|           | + | 0 | - |
+|-----------|---|---|---|
+| easy      |   | x |   |
+| get       | x |   |   |
+| set       | x |   |   |
+| traversal | x |   |   |
+| type safe | x |   |   |
+| schema*   | x |   |   |
 
-Cons
-
-- Protobuf idiosyncracies
+*) a (possibly) non-recursive schema fit for use in databases

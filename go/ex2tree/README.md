@@ -1,10 +1,12 @@
-# Generic Data Manipulation Using Tree
+# Example 2: Using a Tree
 
-Pros
+|           | + | 0 | - |
+|-----------|---|---|---|
+| easy      | x |   |   |
+| get       | x |   |   |
+| set       | x |   |   |
+| traversal |   | x |   |
+| type safe |   | x |   |
+| schema*   |   |   | x |
 
-- flexible
-
-Cons
-
-- always a recursive schema
-- custom library
+*) a (possibly) non-recursive schema fit for use in databases

@@ -9,6 +9,22 @@ import (
 	"workshop/ex2tree/tree"
 )
 
+func Create() tree.Tree {
+	apple := tree.NewTree()
+
+	brand := tree.ValueOfString("granny-smith")
+	apple.Set("brand", brand)
+	age := tree.ValueOfInt(42)
+	apple.Set("age", age)
+
+	skin := tree.NewTree()
+	skin.Set("colour", tree.ValueOfString("green"))
+	skin.Set("blemishes", tree.ValueOfInt(3))
+	apple.Set("skin", tree.ValueOfMessage(skin))
+
+	return apple
+}
+
 func GetValue(m tree.Tree, path []string) tree.Value {
 	if len(path) == 0 {
 		return nil
@@ -59,7 +75,10 @@ func SetValue(m tree.Tree, path []string, val tree.Value) {
 	}
 }
 
-func DepthFirstTraversal(m tree.Tree) []tree.Value {
+func Traverse(m tree.Tree) []tree.Value {
+	if m == nil {
+		return nil
+	}
 	var out []tree.Value
 
 	for _, kv := range m.Children() {
@@ -71,31 +90,15 @@ func DepthFirstTraversal(m tree.Tree) []tree.Value {
 		}
 
 		// go deeper
-		out = append(out, DepthFirstTraversal(v.Tree())...)
+		out = append(out, Traverse(v.Tree())...)
 	}
 	return out
-}
-
-func Create() tree.Tree {
-	apple := tree.NewTree()
-
-	brand := tree.ValueOfString("granny-smith")
-	apple.Set("brand", brand)
-	age := tree.ValueOfInt(42)
-	apple.Set("age", age)
-
-	skin := tree.NewTree()
-	skin.Set("colour", tree.ValueOfString("green"))
-	skin.Set("blemishes", tree.ValueOfInt(3))
-	apple.Set("skin", tree.ValueOfMessage(skin))
-
-	return apple
 }
 
 func Run() {
 	apple := Create()
 	fmt.Println("apple\t\t:", apple)
-	fmt.Println("traversal\t:", DepthFirstTraversal(apple))
+	fmt.Println("traversal\t:", Traverse(apple))
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"skin", "blemishes"}))
 	SetValue(apple, []string{"skin", "blemishes"}, tree.ValueOfInt(4))
 	fmt.Println("after update\t:", apple)

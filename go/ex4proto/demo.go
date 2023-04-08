@@ -71,7 +71,7 @@ func SetValue(m proto.Message, path []string, val protoreflect.Value) {
 	SetValue(vm, path[1:], val)
 }
 
-func DepthFirstTraversal(m proto.Message) []protoreflect.Value {
+func Traverse(m proto.Message) []protoreflect.Value {
 	var out []protoreflect.Value
 
 	// "get into reflect mode"
@@ -89,7 +89,7 @@ func DepthFirstTraversal(m proto.Message) []protoreflect.Value {
 
 		// go deeper
 		vm := v.Message().Interface()
-		out = append(out, DepthFirstTraversal(vm)...)
+		out = append(out, Traverse(vm)...)
 	}
 	return out
 }
@@ -108,15 +108,6 @@ func Create() *pb.Apple {
 	apple.Skin = skin
 
 	return apple
-}
-
-func Run() {
-	apple := Create()
-	fmt.Println("apple\t\t:", apple)
-	fmt.Println("traversal\t:", DepthFirstTraversal(apple))
-	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"skin", "blemishes"}))
-	SetValue(apple, []string{"skin", "blemishes"}, protoreflect.ValueOfInt32(4))
-	fmt.Println("after update\t:", apple)
 }
 
 func Apply(m proto.Message) {
@@ -144,4 +135,13 @@ func Hide(fd protoreflect.FieldDescriptor) bool {
 	}
 	a, ok := x.(*pb.MyAnnotation)
 	return ok && a.Hide
+}
+
+func Run() {
+	apple := Create()
+	fmt.Println("apple\t\t:", apple)
+	fmt.Println("traversal\t:", Traverse(apple))
+	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"skin", "blemishes"}))
+	SetValue(apple, []string{"skin", "blemishes"}, protoreflect.ValueOfInt32(4))
+	fmt.Println("after update\t:", apple)
 }

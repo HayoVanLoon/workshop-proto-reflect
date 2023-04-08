@@ -9,6 +9,22 @@ import (
 	"strconv"
 )
 
+func Create() Apple {
+	apple := Apple{}
+
+	brand := "granny-smith"
+	apple.Brand = brand
+	age := 42
+	apple.Age = int32(age)
+
+	skin := AppleSkin{}
+	skin.Colour = "green"
+	skin.Blemishes = 3
+	apple.Skin = skin
+
+	return apple
+}
+
 type Apple struct {
 	Brand string
 	Age   int32
@@ -36,6 +52,9 @@ func GetValue(m any, path []string) any {
 
 	// get the field
 	v := mv.FieldByName(path[0])
+	if !v.IsValid() {
+		return nil
+	}
 	if len(path) == 1 {
 		return v.Interface()
 	}
@@ -80,7 +99,7 @@ func SetValue(m any, path []string, val reflect.Value) {
 	SetValue(vm, path[1:], val)
 }
 
-func DepthFirstTraversal(m any) []any {
+func Traverse(m any) []any {
 	var out []any
 
 	// "get into reflect mode"
@@ -101,34 +120,9 @@ func DepthFirstTraversal(m any) []any {
 
 		// go deeper
 		vm := v.Interface()
-		out = append(out, DepthFirstTraversal(vm)...)
+		out = append(out, Traverse(vm)...)
 	}
 	return out
-}
-
-func Create() Apple {
-	apple := Apple{}
-
-	brand := "granny-smith"
-	apple.Brand = brand
-	age := 42
-	apple.Age = int32(age)
-
-	skin := AppleSkin{}
-	skin.Colour = "green"
-	skin.Blemishes = 3
-	apple.Skin = skin
-
-	return apple
-}
-
-func Run() {
-	apple := Create()
-	fmt.Println("apple\t\t:", apple)
-	fmt.Println("traversal\t:", DepthFirstTraversal(apple))
-	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"Skin", "Blemishes"}))
-	SetValue(&apple, []string{"Skin", "Blemishes"}, reflect.ValueOf(int32(4)))
-	fmt.Println("after update\t:", apple)
 }
 
 func Apply(m any) {
@@ -160,4 +154,13 @@ func Apply(m any) {
 func Hide(fd reflect.StructField) bool {
 	b, _ := strconv.ParseBool(fd.Tag.Get("hide"))
 	return b
+}
+
+func Run() {
+	apple := Create()
+	fmt.Println("apple\t\t:", apple)
+	fmt.Println("traversal\t:", Traverse(apple))
+	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"Skin", "Blemishes"}))
+	SetValue(&apple, []string{"Skin", "Blemishes"}, reflect.ValueOf(int32(4)))
+	fmt.Println("after update\t:", apple)
 }

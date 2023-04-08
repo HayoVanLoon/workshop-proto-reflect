@@ -1,13 +1,9 @@
-# Generic Data Manipulation Using a Map
+# Example 1: Using a Map (like JSON)
 
-Pros
-
-- flexible
-- easy
-
-Cons
-
-- no type safety
-- no type information
-- no standard schema
-- always a recursive schema
+|           | + | 0 | - |
+|-----------|---|---|---|
+| easy      | x |   |   |
+| get       | x |   |   |
+| set       | x |   |   |
+| traversal |   | x |   |
+| type safe |   |   | x |
