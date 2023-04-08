@@ -132,6 +132,32 @@ func TestTraverse(t *testing.T) {
 	}
 }
 
+func TestSchemaFor(t *testing.T) {
+	type args struct {
+		m proto.Message
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]any
+	}{
+		{
+			"happy",
+			args{&pb.Apple{}},
+			map[string]any{
+				"age": "int32", "brand": "string",
+				"skin": map[string]any{"blemishes": "int32", "colour": "string"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := ex4proto.SchemaFor(tt.args.m)
+			require.Equal(t, tt.want, actual)
+		})
+	}
+}
+
 func TestApply(t *testing.T) {
 	type args struct {
 		m proto.Message

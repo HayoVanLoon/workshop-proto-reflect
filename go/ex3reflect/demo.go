@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type Apple struct {
@@ -133,6 +134,29 @@ func Traverse(m any) []any {
 	return out
 }
 
+func SchemaFor(m any) map[string]any {
+	return schemaFor(reflect.TypeOf(m))
+}
+
+func schemaFor(t reflect.Type) map[string]any {
+	out := make(map[string]any)
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+
+	for i := 0; i < t.NumField(); i += 1 {
+		fd := t.Field(i)
+		var v any
+		if fd.Type.Kind() != reflect.Struct {
+			v = fd.Type.Kind().String()
+		} else {
+			v = schemaFor(fd.Type)
+		}
+		out[strings.ToLower(fd.Name)] = v
+	}
+	return out
+}
+
 func Apply(m any) {
 	// "get into reflect mode"
 	// "get into reflect mode"
@@ -171,6 +195,8 @@ func Run() {
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"Skin", "Blemishes"}))
 	SetValue(&apple, []string{"Skin", "Blemishes"}, int32(4))
 	fmt.Printf("after update\t: %+v\n", apple)
+	schema := SchemaFor(apple)
+	fmt.Println("schema\t\t:", schema)
 	Apply(&apple)
 	fmt.Printf("after apply\t: %+v\n", apple)
 }

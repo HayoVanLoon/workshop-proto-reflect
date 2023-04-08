@@ -118,6 +118,29 @@ func Traverse(m proto.Message) []any {
 	return out
 }
 
+func SchemaFor(m proto.Message) map[string]any {
+	return schemaFor(m.ProtoReflect().Descriptor())
+}
+
+func schemaFor(d protoreflect.MessageDescriptor) map[string]any {
+	out := make(map[string]any)
+
+	fds := d.Fields()
+
+	for i := 0; i < fds.Len(); i += 1 {
+		fd := fds.Get(i)
+		var v any
+		if fd.Kind() == protoreflect.MessageKind {
+			v = schemaFor(fd.Message())
+		} else {
+			v = fd.Kind().String()
+		}
+		out[string(fd.Name())] = v
+	}
+
+	return out
+}
+
 func Apply(m proto.Message) {
 	mp := m.ProtoReflect()
 	mp.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
@@ -131,7 +154,6 @@ func Apply(m proto.Message) {
 		}
 		return true
 	})
-	fmt.Println(m)
 }
 
 func Hide(fd protoreflect.FieldDescriptor) bool {
@@ -154,6 +176,8 @@ func Run() {
 	fmt.Println("skin.blemishes\t:", GetValue(apple, []string{"skin", "blemishes"}))
 	SetValue(apple, []string{"skin", "blemishes"}, int32(4))
 	fmt.Println("after update\t:", apple)
+	schema := SchemaFor(apple)
+	fmt.Println("schema\t\t:", schema)
 	Apply(apple)
 	fmt.Println("after apply\t:", apple)
 }

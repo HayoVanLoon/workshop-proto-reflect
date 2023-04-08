@@ -24,17 +24,9 @@ func main() {
 	case "reflect":
 		fmt.Println("==== with reflect ====")
 		ex3reflect.Run()
-		apple := ex3reflect.Create()
-		ex3reflect.Apply(&apple)
-		fmt.Println(apple)
 	case "proto":
 		fmt.Println("==== with proto reflect ====")
 		ex4proto.Run()
-	case "annotations":
-		fmt.Println("==== apply annotations ====")
-		apple := ex4proto.Create()
-		ex4proto.Apply(apple)
-		fmt.Println(apple)
 	}
 	fmt.Println()
 }
