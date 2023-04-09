@@ -6,6 +6,14 @@ option go_package = "workshop/v1;workshop";
 
 import "workshop/v1/annotation.proto";
 
+// An apple is an edible fruit produced by an apple tree (Malus domestica).
+// Apple trees are cultivated worldwide and are the most widely grown species
+// in the genus Malus. The tree originated in Central Asia, where its wild
+// ancestor, Malus sieversii, is still found. Apples have been grown for
+// thousands of years in Asia and Europe and were brought to North America by
+// European colonists. Apples have religious and mythological significance in
+// many cultures, including Norse, Greek, and European Christian tradition.
+// Source: https://en.wikipedia.org/wiki/Apple
 message Apple {
   // the brand
   string brand = 1;

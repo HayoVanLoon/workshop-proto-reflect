@@ -39,17 +39,21 @@ func GetValue(m proto.Message, path []string) any {
 	mp := m.ProtoReflect()
 	d := mp.Descriptor()
 
-	// get the field
+	// check if path section exists; get field info
 	fd := d.Fields().ByName(protoreflect.Name(path[0]))
 	if fd == nil {
 		return nil
 	}
+
+	// follow the path
 	v := mp.Get(fd)
-	if len(path) == 1 {
-		if v.IsValid() {
-			return v.Interface()
-		}
+	if !v.IsValid() {
 		return nil
+	}
+
+	// are we there yet?
+	if len(path) == 1 {
+		return v.Interface()
 	}
 
 	// try to go deeper
@@ -71,11 +75,13 @@ func SetValue(m proto.Message, path []string, value any) {
 	mp := m.ProtoReflect()
 	d := mp.Descriptor()
 
-	// get the field
+	// check if path section exists; get field info
 	fd := d.Fields().ByName(protoreflect.Name(path[0]))
 	if fd == nil || string(fd.Name()) != path[0] {
 		return
 	}
+
+	// are we there yet?
 	if len(path) == 1 {
 		mp.Set(fd, val)
 		return
@@ -103,22 +109,24 @@ func Traverse(m proto.Message) []any {
 	d := mp.Descriptor()
 
 	for i := 0; i < d.Fields().Len(); i += 1 {
+		// get field info
 		fd := d.Fields().Get(i)
 		v := mp.Get(fd)
 
 		if fd.Kind() != protoreflect.MessageKind {
+			// operate on simple value
 			out = append(out, v.Interface())
-			continue
+		} else {
+			// go deeper
+			vm := v.Message().Interface()
+			out = append(out, Traverse(vm)...)
 		}
-
-		// go deeper
-		vm := v.Message().Interface()
-		out = append(out, Traverse(vm)...)
 	}
 	return out
 }
 
 func SchemaFor(m proto.Message, maxDepth int) map[string]any {
+	// "get into reflect mode"
 	return schemaFor(m.ProtoReflect().Descriptor(), maxDepth)
 }
 
@@ -128,24 +136,28 @@ func schemaFor(d protoreflect.MessageDescriptor, maxDepth int) map[string]any {
 	fds := d.Fields()
 
 	for i := 0; i < fds.Len(); i += 1 {
+		// get field info
 		fd := fds.Get(i)
-		var v any
-		if fd.Kind() == protoreflect.MessageKind {
+
+		if fd.Kind() != protoreflect.MessageKind {
+			// operate on simple field
+			out[string(fd.Name())] = fd.Kind().String()
+		} else {
 			if maxDepth <= 0 {
 				continue
 			}
-			v = schemaFor(fd.Message(), maxDepth-1)
-		} else {
-			v = fd.Kind().String()
+			// go deeper
+			out[string(fd.Name())] = schemaFor(fd.Message(), maxDepth-1)
 		}
-		out[string(fd.Name())] = v
 	}
 
 	return out
 }
 
 func Apply(m proto.Message) {
+	// "get into reflect mode"
 	mp := m.ProtoReflect()
+
 	mp.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 		if Hide(fd) {
 			mp.Clear(fd)

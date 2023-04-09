@@ -20,19 +20,20 @@ The four examples use:
 
 Every example expands upon the feature set provided by the previous approach.
 As this example set was designed around (reasons for) using Protocol Buffers
-reflection, it culminates there. This is by no means intended to suggest that
-Protocol Buffers is 'better'.
+reflection, it kind of culminates there. This is by no means intended to 
+suggest that Protocol Buffers is 'better'.
 
 For demonstrating the cross-language nature of Protocol Buffers' annotation
 system, a small Python example is included as well.
 
-## Features Sets
+## Feature Sets
 
 |                        | map | tree | reflect | proto |
 |------------------------|-----|------|---------|-------|
 | easy                   | +   | +    | -       | o     |
 | get                    | +   | +    | +       | +     |
 | set                    | +   | +    | +       | +     |
+| add anything           | +   | +    | -       | -     |
 | traversal              | -   | +    | +       | +     |
 | type safe              | -   | +    | +       | +     |
 | schema*                | -   | -    | +       | +     |

@@ -85,6 +85,15 @@ func TestSetValue(t *testing.T) {
 			}(),
 		},
 		{
+			"create subs",
+			args{ex1map.Create(), []string{"flavour", "sweetness"}, 5},
+			func() map[string]any {
+				a := ex1map.Create()
+				a["flavour"] = map[string]any{"sweetness": 5}
+				return a
+			}(),
+		},
+		{
 			"empty",
 			args{ex1map.Create(), nil, 1},
 			ex1map.Create(),

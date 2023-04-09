@@ -28,24 +28,23 @@ func GetValue(m map[string]any, path []string) any {
 		return nil
 	}
 
-	for k, v := range m {
-		mapVal, isMap := v.(map[string]any)
-
-		if k != path[0] {
-			continue
-		}
-		// work on current field?
-		if len(path) == 1 {
-			return m[k]
-		}
-
-		// try to go deeper
-		if !isMap {
-			return nil
-		}
-		return GetValue(mapVal, path[1:])
+	// follow the path
+	v, ok := m[path[0]]
+	if !ok {
+		return nil
 	}
-	return nil
+
+	// are we there yet?
+	if len(path) == 1 {
+		return v
+	}
+
+	// try to go deeper
+	mapVal, isMap := v.(map[string]any)
+	if !isMap {
+		return nil
+	}
+	return GetValue(mapVal, path[1:])
 }
 
 func SetValue(m map[string]any, path []string, val any) {
@@ -53,41 +52,43 @@ func SetValue(m map[string]any, path []string, val any) {
 		return
 	}
 
-	for k, v := range m {
-		mapVal, isMap := v.(map[string]any)
+	// follow the path
+	v, ok := m[path[0]]
 
-		if k != path[0] {
-			continue
-		}
-		// work on current field?
-		if len(path) == 1 {
-			m[k] = val
-			return
-		}
-
-		// try to go deeper
-		if !isMap {
-			return
-		}
-		SetValue(mapVal, path[1:], val)
+	// are we there yet?
+	if len(path) == 1 {
+		m[path[0]] = val
 		return
 	}
-	m[path[0]] = val
+
+	// try to go deeper
+	var mapVal map[string]any
+	if ok {
+		var isMap bool
+		if mapVal, isMap = v.(map[string]any); !isMap {
+			return
+		}
+	} else {
+		mapVal = make(map[string]any)
+	}
+	m[path[0]] = mapVal
+	SetValue(mapVal, path[1:], val)
 }
 
 func Traverse(m map[string]any) []any {
 	var out []any
 
 	for _, v := range m {
+		// get field info
 		mapVal, isMap := v.(map[string]any)
 
 		if !isMap {
+			// operate on simple value
 			out = append(out, v)
-			continue
+		} else {
+			// operate on nested object
+			out = append(out, Traverse(mapVal)...)
 		}
-
-		// go deeper
-		out = append(out, Traverse(mapVal)...)
 	}
 	return out
 }

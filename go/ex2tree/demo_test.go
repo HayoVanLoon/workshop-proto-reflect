@@ -96,7 +96,25 @@ func TestSetValue(t *testing.T) {
 				skin := tree.NewTree()
 				skin.Set("colour", tree.ValueOfString("green"))
 				skin.Set("blemishes", tree.ValueOfInt(3))
+				skin.Set("punctures", tree.ValueOfInt(5))
 				apple.Set("skin", tree.ValueOfMessage(skin))
+				return apple
+			}(),
+		},
+		{
+			"create subs",
+			args{ex2tree.Create(), []string{"flavour", "sweetness"}, tree.ValueOfInt(5)},
+			func() tree.Tree {
+				apple := tree.NewTree()
+				apple.Set("brand", tree.ValueOfString("granny-smith"))
+				apple.Set("age", tree.ValueOfInt(42))
+				skin := tree.NewTree()
+				skin.Set("colour", tree.ValueOfString("green"))
+				skin.Set("blemishes", tree.ValueOfInt(3))
+				apple.Set("skin", tree.ValueOfMessage(skin))
+				flavour := tree.NewTree()
+				flavour.Set("sweetness", tree.ValueOfInt(5))
+				apple.Set("flavour", tree.ValueOfMessage(flavour))
 				return apple
 			}(),
 		},

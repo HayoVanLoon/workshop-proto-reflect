@@ -30,25 +30,24 @@ func GetValue(m tree.Tree, path []string) tree.Value {
 		return nil
 	}
 
+	var v tree.Value
 	for _, kv := range m.Children() {
-		k := kv.Key
-		v := kv.Value
-
-		if k != path[0] {
-			continue
+		if kv.Key == path[0] {
+			v = kv.Value
+			break
 		}
-		// work with current field?
-		if len(path) == 1 {
-			return v
-		}
-
-		// try to go deeper
-		if v.Tree() == nil {
-			return nil
-		}
-		return GetValue(v.Tree(), path[1:])
 	}
-	return nil
+
+	// are we there yet?
+	if len(path) == 1 {
+		return v
+	}
+
+	// try to go deeper
+	if v.Tree() == nil {
+		return nil
+	}
+	return GetValue(v.Tree(), path[1:])
 }
 
 func SetValue(m tree.Tree, path []string, val tree.Value) {
@@ -56,28 +55,32 @@ func SetValue(m tree.Tree, path []string, val tree.Value) {
 		return
 	}
 
+	var v tree.Value
 	for _, kv := range m.Children() {
-		k := kv.Key
-		v := kv.Value
-
-		if k != path[0] {
-			continue
+		if kv.Key == path[0] {
+			v = kv.Value
+			break
 		}
-		// work on current field?
-		if len(path) == 1 {
-			if v.Type() != val.Type() {
-				return
-			}
-			m.Set(k, val)
-			return
-		}
-
-		// try to go deeper
-		if v.Tree() == nil {
-			return
-		}
-		SetValue(v.Tree(), path[1:], val)
 	}
+
+	// are we there yet?
+	if len(path) == 1 {
+		// check type
+		if v != nil && v.Type() != val.Type() {
+			return
+		}
+		m.Set(path[0], val)
+		return
+	}
+
+	// try to go deeper
+	if v == nil {
+		v = tree.ValueOfMessage(tree.NewTree())
+		m.Set(path[0], v)
+	} else if v.Type() != tree.ValueTypeTree {
+		return
+	}
+	SetValue(v.Tree(), path[1:], val)
 }
 
 func Traverse(m tree.Tree) []tree.Value {

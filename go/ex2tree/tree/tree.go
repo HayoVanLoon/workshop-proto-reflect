@@ -7,11 +7,11 @@ import (
 
 type KeyValue struct {
 	Key   string
-	Value value
+	Value Value
 }
 
 func (kv KeyValue) String() string {
-	return kv.Key + ":" + kv.Value.String()
+	return kv.Key + ":" + kv.Value.(value).String()
 }
 
 type Value interface {
@@ -64,7 +64,7 @@ func (m *message) String() string {
 type ValueType int
 
 const (
-	valueTypeUnknown ValueType = iota
+	ValueTypeUnknown ValueType = iota
 	ValueTypeTree
 	ValueTypeString
 	ValueTypeInt

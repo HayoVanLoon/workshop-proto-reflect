@@ -15,20 +15,24 @@ def apply(m):
             m.ClearField(fd.name)
             continue
         if fd.type == descriptor.FieldDescriptor.TYPE_MESSAGE:
+            # go deeper
             v = getattr(m, fd.name)
             apply(v)
 
 
 def run():
-    apple = pb.Apple()
-    apple.brand = "granny-smith"
-    apple.age = 42
-    apple.skin.colour = "green"
-    apple.skin.blemishes = 3
+    apple = pb.Apple(
+        brand="granny-smith",
+        age=42,
+        skin=pb.Apple.Skin(
+            colour="green",
+            blemishes=3
+        ),
+    )
 
     print("==== before ====")
     print(apple)
-    print("==== apply annotations ====")
+    print("==== after apply ====")
     apply(apple)
     print(apple)
 

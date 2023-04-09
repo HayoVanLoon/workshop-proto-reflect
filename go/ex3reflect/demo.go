@@ -51,17 +51,25 @@ func GetValue(m any, path []string) any {
 		mv = mv.Elem()
 	}
 
-	// get the field
+	// check if path section exists; get field info
+	ft, ok := t.FieldByName(path[0])
+	if !ok {
+		return nil
+	}
+
+	// follow the path
 	v := mv.FieldByName(path[0])
 	if !v.IsValid() {
 		return nil
 	}
+
+	// are we there yet?
 	if len(path) == 1 {
 		return v.Interface()
 	}
 
 	// try to go deeper
-	if v.Type().Kind() != reflect.Struct {
+	if ft.Type.Kind() != reflect.Struct {
 		return nil
 	}
 	vm := v.Interface()
@@ -83,28 +91,29 @@ func SetValue(m any, path []string, value any) {
 		mv = mv.Elem()
 	}
 
-	// get the field
-	fd, ok := t.FieldByName(path[0])
+	// check if path section exists; get field info
+	ft, ok := t.FieldByName(path[0])
 	if !ok {
 		return
 	}
-	v := mv.FieldByName(path[0])
+
+	// are we there yet?
 	if len(path) == 1 {
+		v := mv.FieldByName(path[0])
 		v.Set(val)
 		return
 	}
 
 	// try to go deeper
-	if v.Type().Kind() != reflect.Struct {
+	if ft.Type.Kind() != reflect.Struct {
 		return
 	}
-	var vm any
-	if v.IsValid() {
-		vm = v.Addr().Interface()
-	} else {
+	v := mv.FieldByName(path[0])
+	if !v.IsValid() {
 		// might work for non-initialised pointer values; untested
-		vm = reflect.New(fd.Type)
+		v = reflect.New(ft.Type)
 	}
+	vm := v.Addr().Interface()
 	SetValue(vm, path[1:], value)
 }
 
@@ -120,21 +129,24 @@ func Traverse(m any) []any {
 	}
 
 	for i := 0; i < t.NumField(); i += 1 {
+		// get field info
+		ft := t.Field(i)
 		v := mv.Field(i)
 
-		if v.Type().Kind() != reflect.Struct {
+		if ft.Type.Kind() != reflect.Struct {
+			// operate on simple value
 			out = append(out, v.Interface())
-			continue
+		} else {
+			// go deeper
+			vm := v.Interface()
+			out = append(out, Traverse(vm)...)
 		}
-
-		// go deeper
-		vm := v.Interface()
-		out = append(out, Traverse(vm)...)
 	}
 	return out
 }
 
 func SchemaFor(m any, maxDepth int) map[string]any {
+	// "get into reflect mode"
 	return schemaFor(reflect.TypeOf(m), maxDepth)
 }
 
@@ -145,23 +157,24 @@ func schemaFor(t reflect.Type, maxDepth int) map[string]any {
 	}
 
 	for i := 0; i < t.NumField(); i += 1 {
+		// get field info
 		fd := t.Field(i)
-		var v any
+
 		if fd.Type.Kind() != reflect.Struct {
-			v = fd.Type.Kind().String()
+			// operate on simple field
+			out[strings.ToLower(fd.Name)] = fd.Type.Kind().String()
 		} else {
 			if maxDepth <= 0 {
 				continue
 			}
-			v = schemaFor(fd.Type, maxDepth-1)
+			// go deeper
+			out[strings.ToLower(fd.Name)] = schemaFor(fd.Type, maxDepth-1)
 		}
-		out[strings.ToLower(fd.Name)] = v
 	}
 	return out
 }
 
 func Apply(m any) {
-	// "get into reflect mode"
 	// "get into reflect mode"
 	t := reflect.TypeOf(m)
 	mv := reflect.ValueOf(m)
@@ -171,6 +184,7 @@ func Apply(m any) {
 	}
 
 	for i := 0; i < t.NumField(); i += 1 {
+		// get field info
 		fd := t.Field(i)
 		v := mv.Field(i)
 

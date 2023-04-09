@@ -2,7 +2,10 @@
 
 Protobuf's reflection API feels similar to the standard reflect library.
 However, as it will only operate on Protobuf structures, there are way fewer
-(edge) cases to take into account.
+(edge) cases to take into account. For starters: every non-scalar field is a 
+pointer.
+
+It can follow the patterns introduced for normal reflection.
 
 Its annotation system (via extensions) allows for richer annotations compared
 to the standard library. And being a language-agnostic system, annotation
@@ -16,6 +19,7 @@ for [Python](../../py/README.md).
 | easy                   |   | x |   |
 | get                    | x |   |   |
 | set                    | x |   |   |
+| add anything           |   |   | x |
 | traversal              | x |   |   |
 | type safe              | x |   |   |
 | schema*                | x |   |   |
