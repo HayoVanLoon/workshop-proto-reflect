@@ -30,7 +30,7 @@ system, a small Python example is included as well.
 
 |                        | map | tree | reflect | proto |
 |------------------------|-----|------|---------|-------|
-| easy                   | +   | +    | -       | o     |
+| easy                   | +   | +    | -       | 0     |
 | get                    | +   | +    | +       | +     |
 | set                    | +   | +    | +       | +     |
 | add anything           | +   | +    | -       | -     |
